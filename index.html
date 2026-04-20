@@ -97,7 +97,7 @@ tr:hover td{background:var(--alt)}
 <div class="tab-bar">
   <button class="tab-btn on" onclick="showTab('companies',this)">🏢 Companies</button>
   <button class="tab-btn" onclick="showTab('contacts',this)">👤 Contacts</button>
-  <button class="tab-btn" onclick="showTab('setup',this)">⚙ Setup</button>
+  <button class="tab-btn" onclick="showTab('setup',this)" style="display:none">⚙ Setup</button>
 </div>
 
 <!-- ═══ SETUP PAGE ═══════════════════════════════════════════════════════════ -->
@@ -315,7 +315,13 @@ tr:hover td{background:var(--alt)}
       </div>
       <div class="fg">
         <label>Associated Company <span class="req">*</span></label>
-        <input type="text" id="p_company" placeholder="Type company name exactly as registered">
+        <select id="p_company">
+          <option value="">— Select company (capture company first) —</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Division / Business Unit <span class="req">*</span></label>
+        <input type="text" id="p_division" placeholder="e.g. Retail Banking, Mining Operations, Head Office">
       </div>
       <div class="fg">
         <label>Persona Type <span class="req">*</span></label>
@@ -507,6 +513,16 @@ function showTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('page-'+tab).classList.add('on');
   btn.classList.add('on');
+  if(tab === 'contacts') populateCompanyDropdown();
+}
+
+function populateCompanyDropdown() {
+  const sel = document.getElementById('p_company');
+  if(!sel) return;
+  const current = sel.value;
+  const companies = load('companies');
+  sel.innerHTML = '<option value="">— Select company (capture company first) —</option>'
+    + companies.map(c => `<option value="${c.companyName}" ${c.companyName === current ? 'selected' : ''}>${c.companyName}</option>`).join('');
 }
 
 // ── Submit to Power Automate or fallback to localStorage ───────────────────
@@ -551,6 +567,7 @@ async function submitCompany() {
   if(!d.industry){toast('Please select an Industry / Sector','err');return;}
   if(!d.companySize){toast('Please select Company Size','err');return;}
   if(!d.relationshipType){toast('Please select a Relationship Type','err');return;}
+  if(!d.division){toast('Division / Business Unit is required','err');return;}
   if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
 
   const btn = document.getElementById('btn-save-company');
@@ -592,6 +609,7 @@ function getContactData() {
     lastName: document.getElementById('p_last').value.trim(),
     jobTitle: document.getElementById('p_title').value.trim(),
     associatedCompany: document.getElementById('p_company').value.trim(),
+    division: document.getElementById('p_division').value.trim(),
     personaType: document.getElementById('p_persona').value,
     seniorityLevel: document.getElementById('p_seniority').value,
     email: document.getElementById('p_email').value.trim(),
@@ -614,6 +632,7 @@ async function submitContact() {
   if(!d.associatedCompany){toast('Associated Company is required','err');return;}
   if(!d.personaType){toast('Please select a Persona Type','err');return;}
   if(!d.email){toast('Work Email is required','err');return;}
+  if(!d.division){toast('Division / Business Unit is required','err');return;}
   if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
   if(!d.communicationPreference){toast('Please select a Communication Preference','err');return;}
   if(!d.popiaConsent){toast('Please select POPIA Consent status','err');return;}
@@ -690,12 +709,13 @@ function renderContacts() {
     return;
   }
   const pc={'Economic Buyer':'badge-r','Technical Champion':'badge-b','Compliance Gatekeeper':'badge-p','IT Gatekeeper':'badge-m','Hiring Manager':'badge-g'};
-  el.innerHTML='<table><thead><tr><th>Name</th><th>Title</th><th>Persona</th><th>Company</th><th>Email</th><th>POPIA</th></tr></thead><tbody>'
+  el.innerHTML='<table><thead><tr><th>Name</th><th>Title</th><th>Persona</th><th>Company</th><th>Division</th><th>Email</th><th>POPIA</th></tr></thead><tbody>'
     +data.map(r=>`<tr>
       <td><strong>${r.firstName} ${r.lastName}</strong>${r.seniorityLevel?'<br><span style="font-size:11px;color:var(--m)">'+r.seniorityLevel+'</span>':''}</td>
       <td style="font-size:12px">${r.jobTitle}</td>
       <td><span class="badge ${pc[r.personaType]||'badge-m'}">${r.personaType||'—'}</span></td>
       <td style="font-size:12px">${r.associatedCompany}</td>
+      <td style="font-size:12px">${r.division||'—'}</td>
       <td style="font-size:12px">${r.email}</td>
       <td style="font-size:11px">${r.popiaConsent&&r.popiaConsent.includes('Yes')?'<span style="color:var(--grn)">✓</span>':'<span style="color:var(--m)">?</span>'}</td>
     </tr>`).join('')+'</tbody></table>';
@@ -727,6 +747,7 @@ function exportCSV(type) {
 loadSetup();
 renderCompanies();
 renderContacts();
+populateCompanyDropdown();
 </script>
 </body>
 </html>
