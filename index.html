@@ -206,7 +206,7 @@ tr:hover td{background:var(--alt)}
         </select>
       </div>
       <div class="fg">
-        <label>Assigned Rep (email)</label>
+        <label>Assigned Rep (email) <span class="req">*</span></label>
         <input type="text" id="c_owner" placeholder="e.g. fritz@idbasesoftware.com">
       </div>
       <div class="fg">
@@ -405,7 +405,7 @@ tr:hover td{background:var(--alt)}
         </select>
       </div>
       <div class="fg">
-        <label>Assigned Rep (email)</label>
+        <label>Assigned Rep (email) <span class="req">*</span></label>
         <input type="text" id="p_owner" placeholder="e.g. fritz@idbasesoftware.com">
       </div>
       <div class="fg span2">
@@ -468,6 +468,7 @@ function getSetup() {
 }
 
 function updateConnectionStatus() {
+  if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
   const s = getSetup();
   const el = document.getElementById('conn-status');
   const both = s.companyUrl && s.contactUrl;
@@ -607,6 +608,7 @@ async function submitContact() {
   btn.innerHTML = '<span class="spinner"></span> Saving...';
   btn.disabled = true;
 
+  if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
   const s = getSetup();
   let savedToCloud = false;
 
