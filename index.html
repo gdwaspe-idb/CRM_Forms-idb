@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>iDbase360 — CRM Data Entry</title>
+<style>
+:root{
+  --r:#C0272D;--dr:#8B1A1D;--b:#404040;--m:#737373;
+  --bg:#F4F4F4;--w:#fff;--bd:#DDDDDD;--alt:#F9F9F9;
+  --grn:#2E7D32;--grn-l:#E8F5E9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Calibri,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--b);font-size:14px;min-height:100vh}
+.hdr{background:var(--r);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.hdr-brand{color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.5px}
+.hdr-sub{color:rgba(255,255,255,0.6);font-size:11px;margin-top:1px}
+.hdr-status{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700}
+.hdr-status.connected{background:rgba(46,125,50,0.3);color:#A5D6A7}
+.hdr-status.disconnected{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.6)}
+.tab-bar{background:var(--dr);display:flex;padding:0 32px}
+.tab-btn{padding:13px 22px;font-size:13px;color:rgba(255,255,255,0.6);cursor:pointer;border-bottom:3px solid transparent;font-family:inherit;background:none;border-left:none;border-right:none;border-top:none;transition:all .15s;user-select:none;font-weight:600}
+.tab-btn:hover{color:#fff}
+.tab-btn.on{color:#fff;border-bottom-color:#fff}
+.page{display:none;padding:28px 32px;max-width:1000px;margin:0 auto}
+.page.on{display:block}
+h1.ph{font-size:20px;color:var(--b);margin-bottom:4px}
+.pm{font-size:12px;color:var(--m);margin-bottom:24px}
+h2.sh{font-size:12px;font-weight:700;color:var(--r);text-transform:uppercase;letter-spacing:.8px;margin:24px 0 14px;padding-bottom:6px;border-bottom:2px solid var(--r)}
+.form-card{background:var(--w);border:1px solid var(--bd);border-radius:8px;padding:24px;margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.span2{grid-column:span 2}
+.fg.span3{grid-column:1/-1}
+label{font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.5px}
+label .req{color:var(--r);margin-left:2px}
+input[type=text],input[type=email],input[type=tel],input[type=url],select,textarea{
+  width:100%;padding:9px 11px;border:1.5px solid var(--bd);border-radius:6px;
+  font-size:13px;color:var(--b);font-family:inherit;background:var(--w);transition:border .12s
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--r)}
+textarea{resize:vertical;min-height:72px}
+.btn{padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:all .12s;display:inline-flex;align-items:center;gap:7px}
+.btn-r{background:var(--r);color:#fff}
+.btn-r:hover{background:var(--dr)}
+.btn-r:disabled{background:#ccc;cursor:not-allowed}
+.btn-o{background:var(--w);color:var(--r);border:1.5px solid var(--r)}
+.btn-o:hover{background:#FFF0F0}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{background:#fff;color:#c62828;border:1.5px solid #ef9a9a}
+.btn-danger:hover{background:#FFEBEE}
+.btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.rec-table-wrap{background:var(--w);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.rec-table-hdr{background:var(--r);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.rec-table-hdr h3{font-size:13px;font-weight:700}
+.rec-count{background:rgba(255,255,255,0.2);font-size:11px;padding:2px 9px;border-radius:10px}
+table{width:100%;border-collapse:collapse}
+th{background:var(--alt);font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.4px;padding:9px 12px;text-align:left;border-bottom:1px solid var(--bd)}
+td{padding:9px 12px;font-size:13px;border-bottom:1px solid var(--bd);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--alt)}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px}
+.badge-r{background:#FEE8E8;color:var(--dr)}
+.badge-b{background:#E3F2FD;color:#1565C0}
+.badge-g{background:var(--grn-l);color:var(--grn)}
+.badge-m{background:#FFF3E0;color:#E65100}
+.badge-p{background:#F3E5F5;color:#6A1B9A}
+.empty{text-align:center;padding:40px 20px;color:var(--m)}
+.empty-icon{font-size:32px;margin-bottom:10px;opacity:0.4}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--grn);color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;z-index:999;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.err{background:var(--dr)}
+.toast.warn{background:#E65100}
+.info-box{background:#EEF4FF;border:1px solid #B5D4F4;border-radius:6px;padding:11px 14px;font-size:13px;color:#0C447C;margin-bottom:18px;line-height:1.6}
+.warn-box{background:#FFF8E6;border:1px solid #EF9F27;border-radius:6px;padding:11px 14px;font-size:13px;color:#633806;margin-bottom:18px;line-height:1.6}
+.setup-box{background:#FFF8E6;border:1px solid #EF9F27;border-radius:8px;padding:20px;margin-bottom:24px}
+.setup-box h3{font-size:14px;font-weight:700;color:#633806;margin-bottom:10px}
+.setup-box p{font-size:13px;color:#633806;line-height:1.6;margin-bottom:8px}
+.setup-box code{background:rgba(0,0,0,0.08);padding:1px 6px;border-radius:3px;font-family:monospace;font-size:12px}
+.setup-box input{width:100%;padding:8px 11px;border:1.5px solid #EF9F27;border-radius:6px;font-size:13px;font-family:inherit;background:#fff;margin-top:6px}
+.setup-box input:focus{outline:none;border-color:var(--r)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}.fg.span2{grid-column:span 1}.page{padding:20px 16px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-brand">iDbase360</div>
+    <div class="hdr-sub">CRM Data Entry — SharePoint Connected</div>
+  </div>
+  <div id="conn-status" class="hdr-status disconnected">⚠ Flow URL not configured</div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn on" onclick="showTab('companies',this)">🏢 Companies</button>
+  <button class="tab-btn" onclick="showTab('contacts',this)">👤 Contacts</button>
+  <button class="tab-btn" onclick="showTab('setup',this)">⚙ Setup</button>
+</div>
+
+<!-- ═══ SETUP PAGE ═══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-setup">
+  <h1 class="ph">Setup — Power Automate Connection</h1>
+  <p class="pm">Configure the connection to your SharePoint Lists via Power Automate. Do this once — settings are saved in your browser.</p>
+
+  <div class="setup-box">
+    <h3>Step 1 — Paste your Company Flow URL</h3>
+    <p>After creating the Power Automate flow for Companies, copy the <strong>HTTP POST URL</strong> from the trigger step and paste it here.</p>
+    <input type="url" id="setup-company-url" placeholder="https://prod-xx.westeurope.logic.azure.com/workflows/..." oninput="saveSetup()">
+  </div>
+
+  <div class="setup-box">
+    <h3>Step 2 — Paste your Contact Flow URL</h3>
+    <p>After creating the Power Automate flow for Contacts, copy the <strong>HTTP POST URL</strong> from the trigger step and paste it here.</p>
+    <input type="url" id="setup-contact-url" placeholder="https://prod-xx.westeurope.logic.azure.com/workflows/..." oninput="saveSetup()">
+  </div>
+
+  <div class="info-box">
+    <strong>How to get the Flow URL:</strong><br>
+    In Power Automate → open your flow → click the <strong>When a HTTP request is received</strong> trigger → copy the <strong>HTTP POST URL</strong> that appears. It will only appear after you save the flow for the first time. See the setup guide document for the full step-by-step.
+  </div>
+
+  <div class="info-box">
+    <strong>Offline / backup mode:</strong> If the Flow URL is not configured, all form submissions are saved locally in your browser and you can export them as a CSV using the Export button on each tab. This CSV can be imported directly into SharePoint or HubSpot.
+  </div>
+
+  <button class="btn btn-r" onclick="testConnection()">Test Connection</button>
+</div>
+
+<!-- ═══ COMPANIES PAGE ═══════════════════════════════════════════════════════ -->
+<div class="page on" id="page-companies">
+
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1 class="ph">Company Records</h1>
+      <p class="pm">Complete all required fields marked <span style="color:var(--r);font-weight:700">*</span> — then click Save.</p>
+    </div>
+    <button class="btn btn-o" onclick="exportCSV('companies')" style="margin-top:4px">⬇ Export CSV (backup)</button>
+  </div>
+
+  <div class="form-card">
+    <h2 class="sh" style="margin-top:0">Company Details</h2>
+    <div class="form-grid">
+
+      <div class="fg">
+        <label>Company Name <span class="req">*</span></label>
+        <input type="text" id="c_name" placeholder="Registered company name">
+      </div>
+      <div class="fg">
+        <label>Trading Name</label>
+        <input type="text" id="c_trading" placeholder="If different from registered name">
+      </div>
+      <div class="fg">
+        <label>Registration Number</label>
+        <input type="text" id="c_reg" placeholder="e.g. 2018/123456/07">
+      </div>
+      <div class="fg">
+        <label>Industry / Sector <span class="req">*</span></label>
+        <select id="c_industry">
+          <option value="">— Select sector —</option>
+          <option>Financial Services</option>
+          <option>Mining & Energy</option>
+          <option>Public Sector</option>
+          <option>Retail & FMCG</option>
+          <option>Telecommunications</option>
+          <option>Transport & Logistics</option>
+          <option>Manufacturing</option>
+          <option>Education & EdTech</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Company Size <span class="req">*</span></label>
+        <select id="c_size">
+          <option value="">— Select size —</option>
+          <option>1–50 employees</option>
+          <option>51–200 employees</option>
+          <option>201–500 employees</option>
+          <option>501–1,000 employees</option>
+          <option>1,001–5,000 employees</option>
+          <option>5,000+ employees</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Relationship Type <span class="req">*</span></label>
+        <select id="c_reltype">
+          <option value="">— Select type —</option>
+          <option>iDbase360 Prospect</option>
+          <option>iDbase360 Client</option>
+          <option>Resource Partner Prospect</option>
+          <option>Resource Partner Client</option>
+          <option>Technology Partner</option>
+          <option>Referral Partner</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>JSE Listed</label>
+        <select id="c_jse">
+          <option value="">— Select —</option>
+          <option>Yes</option>
+          <option>No</option>
+          <option>SOE / Public Entity</option>
+          <option>Unknown</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Assigned Rep (email)</label>
+        <input type="text" id="c_owner" placeholder="e.g. fritz@idbasesoftware.com">
+      </div>
+      <div class="fg">
+        <label>Website</label>
+        <input type="url" id="c_website" placeholder="https://www.company.co.za">
+      </div>
+      <div class="fg">
+        <label>LinkedIn Company Page</label>
+        <input type="url" id="c_linkedin" placeholder="https://linkedin.com/company/...">
+      </div>
+      <div class="fg">
+        <label>Primary Phone</label>
+        <input type="tel" id="c_phone" placeholder="+27 11 000 0000">
+      </div>
+      <div class="fg">
+        <label>Primary Email</label>
+        <input type="email" id="c_email" placeholder="info@company.co.za">
+      </div>
+      <div class="fg span2">
+        <label>Street Address</label>
+        <input type="text" id="c_address" placeholder="Street address, suburb, city, postal code">
+      </div>
+      <div class="fg">
+        <label>City</label>
+        <input type="text" id="c_city" placeholder="e.g. Sandton">
+      </div>
+      <div class="fg">
+        <label>Province</label>
+        <select id="c_province">
+          <option value="">— Select —</option>
+          <option>Gauteng</option>
+          <option>Western Cape</option>
+          <option>KwaZulu-Natal</option>
+          <option>Eastern Cape</option>
+          <option>Limpopo</option>
+          <option>Mpumalanga</option>
+          <option>North West</option>
+          <option>Free State</option>
+          <option>Northern Cape</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Annual Revenue (ZAR estimate)</label>
+        <select id="c_revenue">
+          <option value="">— Select range —</option>
+          <option>Under R50M</option>
+          <option>R50M – R200M</option>
+          <option>R200M – R500M</option>
+          <option>R500M – R2B</option>
+          <option>R2B – R10B</option>
+          <option>Over R10B</option>
+          <option>Unknown</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Existing Analytics Platform</label>
+        <input type="text" id="c_platform" placeholder="e.g. Power BI, SAS, Databricks, None">
+      </div>
+      <div class="fg span2">
+        <label>Notes / Context</label>
+        <textarea id="c_notes" placeholder="Key context, lead source, referred by, known initiatives..."></textarea>
+      </div>
+
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-r" id="btn-save-company" onclick="submitCompany()">Save Company Record</button>
+      <button class="btn btn-o" onclick="clearForm('company')">Clear Form</button>
+    </div>
+  </div>
+
+  <div class="rec-table-wrap">
+    <div class="rec-table-hdr">
+      <h3>Saved Records (this session)</h3>
+      <span class="rec-count" id="co-count">0 records</span>
+    </div>
+    <div id="co-table-body"></div>
+  </div>
+</div>
+
+<!-- ═══ CONTACTS PAGE ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-contacts">
+
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1 class="ph">Contact Records</h1>
+      <p class="pm">Capture persona contacts associated with company records.</p>
+    </div>
+    <button class="btn btn-o" onclick="exportCSV('contacts')" style="margin-top:4px">⬇ Export CSV (backup)</button>
+  </div>
+
+  <div class="form-card">
+    <h2 class="sh" style="margin-top:0">Contact Details</h2>
+    <div class="form-grid">
+
+      <div class="fg">
+        <label>First Name <span class="req">*</span></label>
+        <input type="text" id="p_first" placeholder="First name">
+      </div>
+      <div class="fg">
+        <label>Last Name <span class="req">*</span></label>
+        <input type="text" id="p_last" placeholder="Last name">
+      </div>
+      <div class="fg">
+        <label>Job Title <span class="req">*</span></label>
+        <input type="text" id="p_title" placeholder="e.g. Chief Data Officer">
+      </div>
+      <div class="fg">
+        <label>Associated Company <span class="req">*</span></label>
+        <input type="text" id="p_company" placeholder="Type company name exactly as registered">
+      </div>
+      <div class="fg">
+        <label>Persona Type <span class="req">*</span></label>
+        <select id="p_persona">
+          <option value="">— Select persona —</option>
+          <option>Economic Buyer</option>
+          <option>Technical Champion</option>
+          <option>Compliance Gatekeeper</option>
+          <option>IT Gatekeeper</option>
+          <option>Hiring Manager</option>
+          <option>Executive Sponsor</option>
+          <option>End User / Champion</option>
+          <option>Procurement / SCM</option>
+          <option>Legal</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Seniority Level</label>
+        <select id="p_seniority">
+          <option value="">— Select level —</option>
+          <option>C-Suite / Executive</option>
+          <option>VP / Director</option>
+          <option>Senior Manager</option>
+          <option>Manager</option>
+          <option>Specialist / Analyst</option>
+          <option>Coordinator</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Work Email <span class="req">*</span></label>
+        <input type="email" id="p_email" placeholder="name@company.co.za">
+      </div>
+      <div class="fg">
+        <label>Direct Phone</label>
+        <input type="tel" id="p_phone" placeholder="+27 11 000 0000">
+      </div>
+      <div class="fg">
+        <label>Mobile / Cell</label>
+        <input type="tel" id="p_mobile" placeholder="+27 82 000 0000">
+      </div>
+      <div class="fg">
+        <label>LinkedIn URL</label>
+        <input type="url" id="p_linkedin" placeholder="https://linkedin.com/in/...">
+      </div>
+      <div class="fg">
+        <label>Communication Preference</label>
+        <select id="p_comms">
+          <option value="">— Select —</option>
+          <option>Email preferred</option>
+          <option>WhatsApp preferred</option>
+          <option>Phone call preferred</option>
+          <option>Teams / Video preferred</option>
+          <option>In-person preferred</option>
+          <option>No preference stated</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Lead Source</label>
+        <select id="p_source">
+          <option value="">— Select source —</option>
+          <option>CIO Summit SA</option>
+          <option>Mining Indaba</option>
+          <option>Manufacturing Indaba</option>
+          <option>AfricaCom</option>
+          <option>Retail Congress SA</option>
+          <option>SAPSE Conference</option>
+          <option>Referral — Partner</option>
+          <option>Referral — Client</option>
+          <option>Referral — Advisory</option>
+          <option>LinkedIn Outreach</option>
+          <option>Email Outreach</option>
+          <option>Dataiku Co-sell</option>
+          <option>Inbound — Website</option>
+          <option>Existing Relationship</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>POPIA Marketing Consent</label>
+        <select id="p_popia">
+          <option value="">— Select —</option>
+          <option>Yes — explicit consent given</option>
+          <option>Yes — legitimate interest (B2B)</option>
+          <option>No — opted out</option>
+          <option>Not yet confirmed</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Assigned Rep (email)</label>
+        <input type="text" id="p_owner" placeholder="e.g. fritz@idbasesoftware.com">
+      </div>
+      <div class="fg span2">
+        <label>Notes / Context</label>
+        <textarea id="p_notes" placeholder="How we met, key interests, pain points raised, next step discussed..."></textarea>
+      </div>
+
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-r" id="btn-save-contact" onclick="submitContact()">Save Contact Record</button>
+      <button class="btn btn-o" onclick="clearForm('contact')">Clear Form</button>
+    </div>
+  </div>
+
+  <div class="rec-table-wrap">
+    <div class="rec-table-hdr">
+      <h3>Saved Records (this session)</h3>
+      <span class="rec-count" id="ct-count">0 records</span>
+    </div>
+    <div id="ct-table-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Storage helpers ────────────────────────────────────────────────────────
+const KEYS = { companies:'idb360_co', contacts:'idb360_ct', setup:'idb360_setup' };
+const load = k => { try { return JSON.parse(localStorage.getItem(KEYS[k])||'[]'); } catch { return []; } };
+const loadObj = k => { try { return JSON.parse(localStorage.getItem(KEYS[k])||'{}'); } catch { return {}; } };
+const save = (k,d) => localStorage.setItem(KEYS[k], JSON.stringify(d));
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.innerHTML = (type==='ok'?'✓ ':type==='warn'?'⚠ ':'✕ ') + msg;
+  t.className = 'toast show' + (type==='err'?' err':type==='warn'?' warn':'');
+  setTimeout(()=>t.className='toast', 3000);
+}
+
+// ── Setup ──────────────────────────────────────────────────────────────────
+function loadSetup() {
+  const s = loadObj('setup');
+  if(s.companyUrl) document.getElementById('setup-company-url').value = s.companyUrl;
+  if(s.contactUrl) document.getElementById('setup-contact-url').value = s.contactUrl;
+  updateConnectionStatus();
+}
+
+function saveSetup() {
+  const s = {
+    companyUrl: document.getElementById('setup-company-url').value.trim(),
+    contactUrl: document.getElementById('setup-contact-url').value.trim()
+  };
+  localStorage.setItem(KEYS.setup, JSON.stringify(s));
+  updateConnectionStatus();
+}
+
+function getSetup() {
+  return loadObj('setup');
+}
+
+function updateConnectionStatus() {
+  const s = getSetup();
+  const el = document.getElementById('conn-status');
+  const both = s.companyUrl && s.contactUrl;
+  const either = s.companyUrl || s.contactUrl;
+  if(both) { el.textContent = '✓ SharePoint connected'; el.className = 'hdr-status connected'; }
+  else if(either) { el.textContent = '⚠ Partially configured'; el.className = 'hdr-status disconnected'; }
+  else { el.textContent = '⚠ Flow URL not configured'; el.className = 'hdr-status disconnected'; }
+}
+
+async function testConnection() {
+  const s = getSetup();
+  if(!s.companyUrl && !s.contactUrl) { toast('Paste at least one Flow URL first', 'err'); return; }
+  toast('Testing connection...', 'warn');
+  // Power Automate HTTP trigger responds to OPTIONS or GET with 404/405 which still confirms the URL is reachable
+  try {
+    await fetch(s.companyUrl || s.contactUrl, { method:'OPTIONS', mode:'no-cors' });
+    toast('Flow URL appears reachable — submit a test record to confirm end-to-end');
+  } catch(e) {
+    toast('Could not reach the Flow URL — check it is correct', 'err');
+  }
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function showTab(tab, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('page-'+tab).classList.add('on');
+  btn.classList.add('on');
+}
+
+// ── Submit to Power Automate or fallback to localStorage ───────────────────
+async function submitToFlow(url, payload) {
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!resp.ok && resp.status !== 202) throw new Error('Flow returned ' + resp.status);
+  return true;
+}
+
+// ── COMPANY ────────────────────────────────────────────────────────────────
+function getCompanyData() {
+  return {
+    submittedAt: new Date().toISOString(),
+    companyName: document.getElementById('c_name').value.trim(),
+    tradingName: document.getElementById('c_trading').value.trim(),
+    registrationNumber: document.getElementById('c_reg').value.trim(),
+    industry: document.getElementById('c_industry').value,
+    companySize: document.getElementById('c_size').value,
+    relationshipType: document.getElementById('c_reltype').value,
+    jseListed: document.getElementById('c_jse').value,
+    assignedRep: document.getElementById('c_owner').value.trim(),
+    website: document.getElementById('c_website').value.trim(),
+    linkedInPage: document.getElementById('c_linkedin').value.trim(),
+    phone: document.getElementById('c_phone').value.trim(),
+    email: document.getElementById('c_email').value.trim(),
+    streetAddress: document.getElementById('c_address').value.trim(),
+    city: document.getElementById('c_city').value.trim(),
+    province: document.getElementById('c_province').value,
+    annualRevenue: document.getElementById('c_revenue').value,
+    existingPlatform: document.getElementById('c_platform').value.trim(),
+    notes: document.getElementById('c_notes').value.trim(),
+  };
+}
+
+async function submitCompany() {
+  const d = getCompanyData();
+  if(!d.companyName){toast('Company Name is required','err');return;}
+  if(!d.industry){toast('Please select an Industry / Sector','err');return;}
+  if(!d.companySize){toast('Please select Company Size','err');return;}
+  if(!d.relationshipType){toast('Please select a Relationship Type','err');return;}
+
+  const btn = document.getElementById('btn-save-company');
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
+  btn.disabled = true;
+
+  const s = getSetup();
+  let savedToCloud = false;
+
+  if(s.companyUrl) {
+    try {
+      await submitToFlow(s.companyUrl, d);
+      savedToCloud = true;
+    } catch(e) {
+      console.warn('Flow submission failed, falling back to local:', e);
+    }
+  }
+
+  // Always save locally as backup
+  const local = load('companies');
+  local.unshift({ id: Date.now(), ...d });
+  save('companies', local);
+  renderCompanies();
+  clearForm('company');
+
+  btn.innerHTML = 'Save Company Record';
+  btn.disabled = false;
+
+  if(savedToCloud) toast('Saved to SharePoint — ' + d.companyName);
+  else if(s.companyUrl) toast('SharePoint failed — saved locally (export CSV to recover)', 'warn');
+  else toast('Saved locally — configure Flow URL in Setup to sync to SharePoint', 'warn');
+}
+
+// ── CONTACT ────────────────────────────────────────────────────────────────
+function getContactData() {
+  return {
+    submittedAt: new Date().toISOString(),
+    firstName: document.getElementById('p_first').value.trim(),
+    lastName: document.getElementById('p_last').value.trim(),
+    jobTitle: document.getElementById('p_title').value.trim(),
+    associatedCompany: document.getElementById('p_company').value.trim(),
+    personaType: document.getElementById('p_persona').value,
+    seniorityLevel: document.getElementById('p_seniority').value,
+    email: document.getElementById('p_email').value.trim(),
+    phone: document.getElementById('p_phone').value.trim(),
+    mobile: document.getElementById('p_mobile').value.trim(),
+    linkedInUrl: document.getElementById('p_linkedin').value.trim(),
+    communicationPreference: document.getElementById('p_comms').value,
+    leadSource: document.getElementById('p_source').value,
+    popiaConsent: document.getElementById('p_popia').value,
+    assignedRep: document.getElementById('p_owner').value.trim(),
+    notes: document.getElementById('p_notes').value.trim(),
+  };
+}
+
+async function submitContact() {
+  const d = getContactData();
+  if(!d.firstName){toast('First Name is required','err');return;}
+  if(!d.lastName){toast('Last Name is required','err');return;}
+  if(!d.jobTitle){toast('Job Title is required','err');return;}
+  if(!d.associatedCompany){toast('Associated Company is required','err');return;}
+  if(!d.personaType){toast('Please select a Persona Type','err');return;}
+  if(!d.email){toast('Work Email is required','err');return;}
+
+  const btn = document.getElementById('btn-save-contact');
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
+  btn.disabled = true;
+
+  const s = getSetup();
+  let savedToCloud = false;
+
+  if(s.contactUrl) {
+    try {
+      await submitToFlow(s.contactUrl, d);
+      savedToCloud = true;
+    } catch(e) {
+      console.warn('Flow submission failed, falling back to local:', e);
+    }
+  }
+
+  const local = load('contacts');
+  local.unshift({ id: Date.now(), ...d });
+  save('contacts', local);
+  renderContacts();
+  clearForm('contact');
+
+  btn.innerHTML = 'Save Contact Record';
+  btn.disabled = false;
+
+  if(savedToCloud) toast('Saved to SharePoint — ' + d.firstName + ' ' + d.lastName);
+  else if(s.contactUrl) toast('SharePoint failed — saved locally (export CSV to recover)', 'warn');
+  else toast('Saved locally — configure Flow URL in Setup to sync to SharePoint', 'warn');
+}
+
+// ── Clear forms ────────────────────────────────────────────────────────────
+function clearForm(type) {
+  const ids = type === 'company'
+    ? ['c_name','c_trading','c_reg','c_owner','c_website','c_linkedin','c_phone','c_email','c_address','c_city','c_platform','c_notes']
+    : ['p_first','p_last','p_title','p_company','p_email','p_phone','p_mobile','p_linkedin','p_owner','p_notes'];
+  const sels = type === 'company'
+    ? ['c_industry','c_size','c_reltype','c_jse','c_province','c_revenue']
+    : ['p_persona','p_seniority','p_comms','p_source','p_popia'];
+  ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  sels.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+// ── Render tables ──────────────────────────────────────────────────────────
+function renderCompanies() {
+  const data = load('companies');
+  document.getElementById('co-count').textContent = data.length + ' record' + (data.length!==1?'s':'');
+  const el = document.getElementById('co-table-body');
+  if(!data.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">🏢</div><p>No records yet. Fill in the form above to add your first company.</p></div>';
+    return;
+  }
+  const rc={'iDbase360 Prospect':'badge-r','iDbase360 Client':'badge-g','Resource Partner Prospect':'badge-b','Resource Partner Client':'badge-p'};
+  el.innerHTML='<table><thead><tr><th>Company</th><th>Sector</th><th>Relationship</th><th>City</th><th>Rep</th><th>Synced</th></tr></thead><tbody>'
+    +data.map(r=>`<tr>
+      <td><strong>${r.companyName}</strong>${r.tradingName?'<br><span style="font-size:11px;color:var(--m)">t/a '+r.tradingName+'</span>':''}</td>
+      <td style="font-size:12px">${r.industry||'—'}</td>
+      <td><span class="badge ${rc[r.relationshipType]||'badge-m'}">${r.relationshipType||'—'}</span></td>
+      <td style="font-size:12px">${r.city||'—'}</td>
+      <td style="font-size:12px">${r.assignedRep||'—'}</td>
+      <td style="font-size:11px">${r.submittedAt?'<span style="color:var(--grn)">✓ '+new Date(r.submittedAt).toLocaleDateString('en-ZA')+'</span>':'—'}</td>
+    </tr>`).join('')+'</tbody></table>';
+}
+
+function renderContacts() {
+  const data = load('contacts');
+  document.getElementById('ct-count').textContent = data.length + ' record' + (data.length!==1?'s':'');
+  const el = document.getElementById('ct-table-body');
+  if(!data.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">👤</div><p>No records yet. Fill in the form above to add your first contact.</p></div>';
+    return;
+  }
+  const pc={'Economic Buyer':'badge-r','Technical Champion':'badge-b','Compliance Gatekeeper':'badge-p','IT Gatekeeper':'badge-m','Hiring Manager':'badge-g'};
+  el.innerHTML='<table><thead><tr><th>Name</th><th>Title</th><th>Persona</th><th>Company</th><th>Email</th><th>POPIA</th></tr></thead><tbody>'
+    +data.map(r=>`<tr>
+      <td><strong>${r.firstName} ${r.lastName}</strong>${r.seniorityLevel?'<br><span style="font-size:11px;color:var(--m)">'+r.seniorityLevel+'</span>':''}</td>
+      <td style="font-size:12px">${r.jobTitle}</td>
+      <td><span class="badge ${pc[r.personaType]||'badge-m'}">${r.personaType||'—'}</span></td>
+      <td style="font-size:12px">${r.associatedCompany}</td>
+      <td style="font-size:12px">${r.email}</td>
+      <td style="font-size:11px">${r.popiaConsent&&r.popiaConsent.includes('Yes')?'<span style="color:var(--grn)">✓</span>':'<span style="color:var(--m)">?</span>'}</td>
+    </tr>`).join('')+'</tbody></table>';
+}
+
+// ── CSV export (backup) ────────────────────────────────────────────────────
+function csvEscape(v){if(!v&&v!==0)return'';const s=String(v);if(s.includes(',')||s.includes('"')||s.includes('\n'))return'"'+s.replace(/"/g,'""')+'"';return s;}
+
+function exportCSV(type) {
+  const data = load(type);
+  if(!data.length){toast('No records to export','err');return;}
+  let csv='';
+  if(type==='companies'){
+    const h=['Company Name','Trading Name','Registration Number','Industry','Company Size','Relationship Type','JSE Listed','Assigned Rep','Website','LinkedIn Page','Phone','Email','Street Address','City','Province','Annual Revenue','Existing Platform','Notes','Submitted At'];
+    csv=h.join(',')+'\n'+data.map(r=>[r.companyName,r.tradingName,r.registrationNumber,r.industry,r.companySize,r.relationshipType,r.jseListed,r.assignedRep,r.website,r.linkedInPage,r.phone,r.email,r.streetAddress,r.city,r.province,r.annualRevenue,r.existingPlatform,r.notes,r.submittedAt].map(csvEscape).join(',')).join('\n');
+  } else {
+    const h=['First Name','Last Name','Job Title','Company','Persona Type','Seniority','Email','Phone','Mobile','LinkedIn URL','Comms Preference','Lead Source','POPIA Consent','Assigned Rep','Notes','Submitted At'];
+    csv=h.join(',')+'\n'+data.map(r=>[r.firstName,r.lastName,r.jobTitle,r.associatedCompany,r.personaType,r.seniorityLevel,r.email,r.phone,r.mobile,r.linkedInUrl,r.communicationPreference,r.leadSource,r.popiaConsent,r.assignedRep,r.notes,r.submittedAt].map(csvEscape).join(',')).join('\n');
+  }
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='iDbase360_'+type+'_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();URL.revokeObjectURL(url);
+  toast('CSV exported — '+data.length+' records');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+loadSetup();
+renderCompanies();
+renderContacts();
+</script>
+</body>
+</html>
