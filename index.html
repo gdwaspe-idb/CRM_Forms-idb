@@ -447,10 +447,21 @@ function toast(msg, type='ok') {
 }
 
 // ── Setup ──────────────────────────────────────────────────────────────────
+// Default Flow URLs — pre-configured for iDbase360
+const DEFAULT_COMPANY_URL = 'https://default458a81ceb2644777975aae62efe1ef.b5.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c01df9a4605043b797048b046f1a4048/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=RsDod-Pc38t48nq2jNPecMm8w7WNE3iUNs4yKUbak0c';
+const DEFAULT_CONTACT_URL = 'https://default458a81ceb2644777975aae62efe1ef.b5.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/bb83429c827a432688d8c5fff199f60f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=a2bgRyTjfElsIPYLUrhGZmUDRu1_tMt2ts4gm4z2neE';
+
 function loadSetup() {
   const s = loadObj('setup');
-  if(s.companyUrl) document.getElementById('setup-company-url').value = s.companyUrl;
-  if(s.contactUrl) document.getElementById('setup-contact-url').value = s.contactUrl;
+  // Use saved URL if present, otherwise fall back to default
+  const companyUrl = s.companyUrl || DEFAULT_COMPANY_URL;
+  const contactUrl = s.contactUrl || DEFAULT_CONTACT_URL;
+  document.getElementById('setup-company-url').value = companyUrl;
+  document.getElementById('setup-contact-url').value = contactUrl;
+  // Save defaults to localStorage if not already set
+  if(!s.companyUrl || !s.contactUrl) {
+    localStorage.setItem(KEYS.setup, JSON.stringify({companyUrl, contactUrl}));
+  }
   updateConnectionStatus();
 }
 
@@ -468,7 +479,6 @@ function getSetup() {
 }
 
 function updateConnectionStatus() {
-  if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
   const s = getSetup();
   const el = document.getElementById('conn-status');
   const both = s.companyUrl && s.contactUrl;
@@ -541,6 +551,7 @@ async function submitCompany() {
   if(!d.industry){toast('Please select an Industry / Sector','err');return;}
   if(!d.companySize){toast('Please select Company Size','err');return;}
   if(!d.relationshipType){toast('Please select a Relationship Type','err');return;}
+  if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
 
   const btn = document.getElementById('btn-save-company');
   btn.innerHTML = '<span class="spinner"></span> Saving...';
@@ -603,6 +614,7 @@ async function submitContact() {
   if(!d.associatedCompany){toast('Associated Company is required','err');return;}
   if(!d.personaType){toast('Please select a Persona Type','err');return;}
   if(!d.email){toast('Work Email is required','err');return;}
+  if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
   if(!d.communicationPreference){toast('Please select a Communication Preference','err');return;}
   if(!d.popiaConsent){toast('Please select POPIA Consent status','err');return;}
 
@@ -610,7 +622,6 @@ async function submitContact() {
   btn.innerHTML = '<span class="spinner"></span> Saving...';
   btn.disabled = true;
 
-  if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
   const s = getSetup();
   let savedToCloud = false;
 
