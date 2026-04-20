@@ -362,7 +362,7 @@ tr:hover td{background:var(--alt)}
         <input type="url" id="p_linkedin" placeholder="https://linkedin.com/in/...">
       </div>
       <div class="fg">
-        <label>Communication Preference</label>
+        <label>Communication Preference <span class="req">*</span></label>
         <select id="p_comms">
           <option value="">— Select —</option>
           <option>Email preferred</option>
@@ -395,7 +395,7 @@ tr:hover td{background:var(--alt)}
         </select>
       </div>
       <div class="fg">
-        <label>POPIA Marketing Consent</label>
+        <label>POPIA Marketing Consent <span class="req">*</span></label>
         <select id="p_popia">
           <option value="">— Select —</option>
           <option>Yes — explicit consent given</option>
@@ -603,6 +603,8 @@ async function submitContact() {
   if(!d.associatedCompany){toast('Associated Company is required','err');return;}
   if(!d.personaType){toast('Please select a Persona Type','err');return;}
   if(!d.email){toast('Work Email is required','err');return;}
+  if(!d.communicationPreference){toast('Please select a Communication Preference','err');return;}
+  if(!d.popiaConsent){toast('Please select POPIA Consent status','err');return;}
 
   const btn = document.getElementById('btn-save-contact');
   btn.innerHTML = '<span class="spinner"></span> Saving...';
