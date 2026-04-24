@@ -567,7 +567,6 @@ async function submitCompany() {
   if(!d.industry){toast('Please select an Industry / Sector','err');return;}
   if(!d.companySize){toast('Please select Company Size','err');return;}
   if(!d.relationshipType){toast('Please select a Relationship Type','err');return;}
-  if(!d.division){toast('Division / Business Unit is required','err');return;}
   if(!d.assignedRep){toast('Assigned Rep is required','err');return;}
 
   const btn = document.getElementById('btn-save-company');
@@ -671,7 +670,7 @@ async function submitContact() {
 function clearForm(type) {
   const ids = type === 'company'
     ? ['c_name','c_trading','c_reg','c_owner','c_website','c_linkedin','c_phone','c_email','c_address','c_city','c_platform','c_notes']
-    : ['p_first','p_last','p_title','p_company','p_email','p_phone','p_mobile','p_linkedin','p_owner','p_notes'];
+    : ['p_first','p_last','p_title','p_company','p_division','p_email','p_phone','p_mobile','p_linkedin','p_owner','p_notes'];
   const sels = type === 'company'
     ? ['c_industry','c_size','c_reltype','c_jse','c_province','c_revenue']
     : ['p_persona','p_seniority','p_comms','p_source','p_popia'];
@@ -732,8 +731,8 @@ function exportCSV(type) {
     const h=['Company Name','Trading Name','Registration Number','Industry','Company Size','Relationship Type','JSE Listed','Assigned Rep','Website','LinkedIn Page','Phone','Email','Street Address','City','Province','Annual Revenue','Existing Platform','Notes','Submitted At'];
     csv=h.join(',')+'\n'+data.map(r=>[r.companyName,r.tradingName,r.registrationNumber,r.industry,r.companySize,r.relationshipType,r.jseListed,r.assignedRep,r.website,r.linkedInPage,r.phone,r.email,r.streetAddress,r.city,r.province,r.annualRevenue,r.existingPlatform,r.notes,r.submittedAt].map(csvEscape).join(',')).join('\n');
   } else {
-    const h=['First Name','Last Name','Job Title','Company','Persona Type','Seniority','Email','Phone','Mobile','LinkedIn URL','Comms Preference','Lead Source','POPIA Consent','Assigned Rep','Notes','Submitted At'];
-    csv=h.join(',')+'\n'+data.map(r=>[r.firstName,r.lastName,r.jobTitle,r.associatedCompany,r.personaType,r.seniorityLevel,r.email,r.phone,r.mobile,r.linkedInUrl,r.communicationPreference,r.leadSource,r.popiaConsent,r.assignedRep,r.notes,r.submittedAt].map(csvEscape).join(',')).join('\n');
+    const h=['First Name','Last Name','Job Title','Company','Division / Business Unit','Persona Type','Seniority','Email','Phone','Mobile','LinkedIn URL','Comms Preference','Lead Source','POPIA Consent','Assigned Rep','Notes','Submitted At'];
+    csv=h.join(',')+'\n'+data.map(r=>[r.firstName,r.lastName,r.jobTitle,r.associatedCompany,r.division,r.personaType,r.seniorityLevel,r.email,r.phone,r.mobile,r.linkedInUrl,r.communicationPreference,r.leadSource,r.popiaConsent,r.assignedRep,r.notes,r.submittedAt].map(csvEscape).join(',')).join('\n');
   }
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
